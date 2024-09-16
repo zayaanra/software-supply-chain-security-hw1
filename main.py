@@ -67,8 +67,11 @@ def get_latest_checkpoint(debug=False):
     if debug:
         print("Fetching latest checkpoint from Rekor Server public instance")
 
+
+    # TODO - stable true or false
+
     try:
-        resp = requests.get("https://rekor.sigstore.dev/api/v1/log?stable=false")
+        resp = requests.get("https://rekor.sigstore.dev/api/v1/log?stable=true")
         content = resp.json()
         return content
     except:
@@ -81,21 +84,18 @@ def consistency(prev_checkpoint, debug=False):
         print("No previous checkpoint to verify consistency with")
         return
     
-    checkpoint = get_latest_checkpoint()
-    treeID = checkpoint['treeID']
-    treeSize = checkpoint['treeSize']
-    root1 = checkpoint['rootHash']
-
-    prevTreeSize = prev_checkpoint['treeSize']
-    root2 = prev_checkpoint['rootHash']
-
-
+    # TODO - idk how to do this part
     
+    checkpoint = get_latest_checkpoint()
+    latestTreeID, latestTreeSize, latestRoot = checkpoint['treeID'], checkpoint['treeSize'], checkpoint['rootHash']
+
+    prevTreeSize, prevTreeID, prevRoot = prev_checkpoint['treeSize'], prev_checkpoint['treeID'], prev_checkpoint['rootHash']
+
     #try:
-    resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/proof?firstSize=1&lastSize={treeSize}&treeID={treeID}")
+    resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/proof?lastSize={prevTreeSize}&treeID={prevTreeID}")
     content = resp.json()
     print(content)
-    verify_consistency(DefaultHasher, prevTreeSize, treeSize, content['hashes'], root2, root1)
+    verify_consistency(DefaultHasher, prevTreeSize, latestTreeSize, content['hashes'], prevRoot, latestRoot)
     # except:
     #     print("Failed to fetch consistency proof from Rekor Server public instance")
 
@@ -148,7 +148,7 @@ def main():
         if not args.root_hash:
             print("please specify root hash for prev checkpoint")
             return
-
+        
         prev_checkpoint = {}
         prev_checkpoint["treeID"] = args.tree_id
         prev_checkpoint["treeSize"] = args.tree_size
