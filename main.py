@@ -84,20 +84,18 @@ def consistency(prev_checkpoint, debug=False):
         print("No previous checkpoint to verify consistency with")
         return
     
-    # TODO - idk how to do this part
-    
+
     checkpoint = get_latest_checkpoint()
     latestTreeID, latestTreeSize, latestRoot = checkpoint['treeID'], checkpoint['treeSize'], checkpoint['rootHash']
 
     prevTreeSize, prevTreeID, prevRoot = prev_checkpoint['treeSize'], prev_checkpoint['treeID'], prev_checkpoint['rootHash']
 
-    #try:
-    resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/proof?lastSize={prevTreeSize}&treeID={prevTreeID}")
-    content = resp.json()
-    print(content)
-    verify_consistency(DefaultHasher, prevTreeSize, latestTreeSize, content['hashes'], prevRoot, latestRoot)
-    # except:
-    #     print("Failed to fetch consistency proof from Rekor Server public instance")
+    try:
+        resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/proof?firstSize={latestTreeSize}&lastSize={prevTreeSize}&treeID={prevTreeID}")
+        content = resp.json()
+        verify_consistency(DefaultHasher, prevTreeSize, latestTreeSize, content['hashes'], prevRoot, latestRoot)
+    except:
+        print("Failed to fetch consistency proof from Rekor Server public instance")
 
 def main():
     debug = False
@@ -157,6 +155,4 @@ def main():
         consistency(prev_checkpoint, debug)
 
 if __name__ == "__main__":
-    log_index = '128511781'
-    #inclusion(log_index, "/home/zayaanra/Desktop/school/software-supply-chain-security/software-supply-chain-security-hw1/artifact.md")
     main()
