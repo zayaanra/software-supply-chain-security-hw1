@@ -67,9 +67,6 @@ def get_latest_checkpoint(debug=False):
     if debug:
         print("Fetching latest checkpoint from Rekor Server public instance")
 
-
-    # TODO - stable true or false
-
     try:
         resp = requests.get("https://rekor.sigstore.dev/api/v1/log?stable=true")
         content = resp.json()
