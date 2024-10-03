@@ -71,8 +71,8 @@ def get_latest_checkpoint(debug=False):
         resp = requests.get("https://rekor.sigstore.dev/api/v1/log?stable=true")
         content = resp.json()
         return content
-    except:
-        print("Failed to fetch latest checkpoint from Rekor Server public instance")
+    except requests.exceptions.RequestException | ValueError as e:
+        print("Failed to fetch latest checkpoint from Rekor Server public instance: ", e)
         return None
 
 def consistency(prev_checkpoint, debug=False):
@@ -89,7 +89,7 @@ def consistency(prev_checkpoint, debug=False):
         resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/proof?firstSize={latestTreeSize}&lastSize={prevTreeSize}&treeID={prevTreeID}")
         content = resp.json()
         verify_consistency(DefaultHasher, prevTreeSize, latestTreeSize, content['hashes'], prevRoot, latestRoot)
-    except requests.exceptions.RequestException | RootMismatchError | KeyError as e:
+    except requests.exceptions.RequestException | RootMismatchError | KeyError | ValueError as e:
         print("Failed to verify consistency proof from Rekor Server public instance: ", e)
 
 def main():
