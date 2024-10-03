@@ -1,0 +1,2 @@
+main.py:23: error: Module "base64" has no attribute "binascii"  [attr-defined]
+Found 1 error in 1 file (checked 3 source files)
