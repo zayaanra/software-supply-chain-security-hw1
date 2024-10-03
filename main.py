@@ -59,9 +59,9 @@ def inclusion(log_index, artifact_filepath, debug=False):
         root_hash = inclusion_proof['rootHash']
         leaf_hash = compute_leaf_hash(body)
 
-        verify_inclusion(DefaultHasher, index, tree_size, leaf_hash, hashes, root_hash, debug=True)
-    except:
-        print("Failed to verify inclusion of log index", log_index, "with artifact", artifact_filepath)
+        verify_inclusion(DefaultHasher, index, tree_size, leaf_hash, hashes, root_hash, debug=debug)
+    except (requests.exceptions.RequestException, KeyError, ValueError, Exception) as e:
+        print("Failed to verify inclusion of log index", log_index, "with artifact", artifact_filepath, ": ", e)
 
 def get_latest_checkpoint(debug=False):
     if debug:
@@ -71,7 +71,7 @@ def get_latest_checkpoint(debug=False):
         resp = requests.get("https://rekor.sigstore.dev/api/v1/log?stable=true")
         content = resp.json()
         return content
-    except requests.exceptions.RequestException | ValueError as e:
+    except (requests.exceptions.RequestException, ValueError) as e:
         print("Failed to fetch latest checkpoint from Rekor Server public instance: ", e)
         return None
 
@@ -89,7 +89,7 @@ def consistency(prev_checkpoint, debug=False):
         resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/proof?firstSize={latestTreeSize}&lastSize={prevTreeSize}&treeID={prevTreeID}")
         content = resp.json()
         verify_consistency(DefaultHasher, prevTreeSize, latestTreeSize, content['hashes'], prevRoot, latestRoot)
-    except requests.exceptions.RequestException | RootMismatchError | KeyError | ValueError as e:
+    except (requests.exceptions.RequestException, RootMismatchError, KeyError, ValueError) as e:
         print("Failed to verify consistency proof from Rekor Server public instance: ", e)
 
 def main():
