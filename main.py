@@ -4,7 +4,7 @@ import json
 import ast
 
 from util import extract_public_key, verify_artifact_signature, decode_base64
-from merkle_proof import DefaultHasher, verify_consistency, verify_inclusion, compute_leaf_hash
+from merkle_proof import DefaultHasher, verify_consistency, verify_inclusion, compute_leaf_hash, RootMismatchError
 
 def get_log_entry(log_index, debug=False):
     if debug:
@@ -81,18 +81,16 @@ def consistency(prev_checkpoint, debug=False):
         print("No previous checkpoint to verify consistency with")
         return
     
-
     checkpoint = get_latest_checkpoint()
-    latestTreeID, latestTreeSize, latestRoot = checkpoint['treeID'], checkpoint['treeSize'], checkpoint['rootHash']
-
+    latestTreeSize, latestRoot = checkpoint['treeSize'], checkpoint['rootHash']
     prevTreeSize, prevTreeID, prevRoot = prev_checkpoint['treeSize'], prev_checkpoint['treeID'], prev_checkpoint['rootHash']
 
     try:
         resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/proof?firstSize={latestTreeSize}&lastSize={prevTreeSize}&treeID={prevTreeID}")
         content = resp.json()
         verify_consistency(DefaultHasher, prevTreeSize, latestTreeSize, content['hashes'], prevRoot, latestRoot)
-    except:
-        print("Failed to fetch consistency proof from Rekor Server public instance")
+    except requests.exceptions.RequestException | RootMismatchError | KeyError as e:
+        print("Failed to verify consistency proof from Rekor Server public instance: ", e)
 
 def main():
     debug = False
