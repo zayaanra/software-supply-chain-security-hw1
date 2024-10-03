@@ -144,6 +144,17 @@ def main():
             print("please specify root hash for prev checkpoint")
             return
         
+        # Validate arguments
+        if not args.tree_id.isdigit():
+            print("tree id must be an integer")
+            return
+        if not args.tree_size.isdigit():
+            print("tree size must be an integer")
+            return
+        if len(args.root_hash) != 64:
+            print("root hash must be 64 characters long")
+            return
+        
         prev_checkpoint = {}
         prev_checkpoint["treeID"] = args.tree_id
         prev_checkpoint["treeSize"] = args.tree_size
