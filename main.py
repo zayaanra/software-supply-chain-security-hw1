@@ -6,6 +6,7 @@ import ast
 from util import extract_public_key, verify_artifact_signature, decode_base64
 from merkle_proof import DefaultHasher, verify_consistency, verify_inclusion, compute_leaf_hash, RootMismatchError
 
+
 def get_log_entry(log_index, debug=False):
     if debug:
         print("Fetching log entry from log index", log_index)
@@ -14,8 +15,9 @@ def get_log_entry(log_index, debug=False):
         # verify that log index value is sane
         resp = requests.get(f"https://rekor.sigstore.dev/api/v1/log/entries?logIndex={log_index}")
         return resp.json()
-    except:
-        print("Failed to fetch log entry from log index", log_index)
+    except (requests.exceptions.RequestException, Exception) as e:
+        print(f"Failed to fetch log entry from log index {log_index}: {e}")
+        print(f"Respone was: {resp.raise_for_status()}")
         return None
 
 def get_verification_proof(log_index, debug=False):
@@ -60,7 +62,7 @@ def inclusion(log_index, artifact_filepath, debug=False):
         leaf_hash = compute_leaf_hash(body)
 
         verify_inclusion(DefaultHasher, index, tree_size, leaf_hash, hashes, root_hash, debug=debug)
-    except (requests.exceptions.RequestException, KeyError, ValueError, Exception) as e:
+    except (KeyError, ValueError, Exception) as e:
         print("Failed to verify inclusion of log index", log_index, "with artifact", artifact_filepath, ": ", e)
 
 def get_latest_checkpoint(debug=False):
@@ -73,6 +75,7 @@ def get_latest_checkpoint(debug=False):
         return content
     except (requests.exceptions.RequestException, ValueError) as e:
         print("Failed to fetch latest checkpoint from Rekor Server public instance: ", e)
+        print("Response was: ", resp.raise_for_status())
         return None
 
 def consistency(prev_checkpoint, debug=False):
@@ -91,6 +94,7 @@ def consistency(prev_checkpoint, debug=False):
         verify_consistency(DefaultHasher, prevTreeSize, latestTreeSize, content['hashes'], prevRoot, latestRoot)
     except (requests.exceptions.RequestException, RootMismatchError, KeyError, ValueError) as e:
         print("Failed to verify consistency proof from Rekor Server public instance: ", e)
+        print("Response was: ", resp.raise_for_status())
 
 def main():
     debug = False
