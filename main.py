@@ -41,7 +41,7 @@ def get_log_entry(log_index, debug=False):
         debug (bool, optional): If True, print debug messages. Defaults to False.
 
     Returns:
-        (Any, None): Returns the log entry associated with the given log index, 
+        (Any, None): Returns the log entry associated with the given log index,
         or None if something went wrong.
     """
     if debug:
@@ -51,7 +51,7 @@ def get_log_entry(log_index, debug=False):
         # verify that log index value is sane
         resp = requests.get(
             f"https://rekor.sigstore.dev/api/v1/log/entries?logIndex={log_index}",
-            timeout=5
+            timeout=5,
         )
         return resp.json()
     except requests.exceptions.RequestException as e:
@@ -68,7 +68,7 @@ def get_verification_proof(log_index, debug=False):
         debug (bool, optional): If True, print debug messages. Defaults to False.
 
     Returns:
-        (dict, None): Returns the verification proof associated with the given log index 
+        (dict, None): Returns the verification proof associated with the given log index
         or None if something went wrong.
     """
     # verify that log index value is sane
@@ -121,10 +121,14 @@ def inclusion(log_index, artifact_filepath, debug=False):
 
         inclusion_proof = verification_proof["inclusionProof"]
 
-        verify_inclusion(DefaultHasher, inclusion_proof, compute_leaf_hash(body), debug=debug)
+        verify_inclusion(
+            DefaultHasher, inclusion_proof, compute_leaf_hash(body), debug=debug
+        )
     except (KeyError, ValueError, binascii.Error) as e:
-        print(f"Failed to verify inclusion of log index {log_index}" \
-              f"with artifact {artifact_filepath}: {e}")
+        print(
+            f"Failed to verify inclusion of log index {log_index}"
+            f"with artifact {artifact_filepath}: {e}"
+        )
 
 
 def get_latest_checkpoint(debug=False):
@@ -141,7 +145,9 @@ def get_latest_checkpoint(debug=False):
         print("Fetching latest checkpoint from Rekor Server public instance")
 
     try:
-        resp = requests.get("https://rekor.sigstore.dev/api/v1/log?stable=true", timeout=5)
+        resp = requests.get(
+            "https://rekor.sigstore.dev/api/v1/log?stable=true", timeout=5
+        )
         content = resp.json()
         return content
     except (requests.exceptions.RequestException, ValueError) as e:
@@ -178,17 +184,19 @@ def consistency(prev_checkpoint, debug=False):
 
     try:
         resp = requests.get(
-            ("https://rekor.sigstore.dev/" \
-            "api/v1/log/proof?" \
-            f"firstSize={latest_tree_size}&lastSize={prev_tree_size}&treeID={prev_tree_id}"),
-            timeout=5
+            (
+                "https://rekor.sigstore.dev/"
+                "api/v1/log/proof?"
+                f"firstSize={latest_tree_size}&lastSize={prev_tree_size}&treeID={prev_tree_id}"
+            ),
+            timeout=5,
         )
         content = resp.json()
         verify_consistency(
             DefaultHasher,
             [prev_tree_size, latest_tree_size],
             content["hashes"],
-            [prev_root, latest_root]
+            [prev_root, latest_root],
         )
     except (
         requests.exceptions.RequestException,

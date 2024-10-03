@@ -38,7 +38,6 @@ RFC6962_LEAF_HASH_PREFIX = 0
 RFC6962_NODE_HASH_PREFIX = 1
 
 
-
 class Hasher:
     """Hasher class that can compute hashes (default is SHA-256).
 
@@ -49,11 +48,12 @@ class Hasher:
         hash_children(left, right)
         size()
     """
+
     def __init__(self, hash_func=hashlib.sha256):
         """Initializes Hasher object
 
         Args:
-            hash_func (Any, optional): The hash function for this Hasher. 
+            hash_func (Any, optional): The hash function for this Hasher.
             Defaults to hashlib.sha256.
         """
         self.hash_func = hash_func
@@ -115,6 +115,7 @@ class Hasher:
 # DefaultHasher is a SHA256 based LogHasher
 DefaultHasher = Hasher(hashlib.sha256)
 
+
 def verify_consistency(hasher, sizes, proof, roots):
     """Verifies consistency between an old checkpoint and latest checkpoint
 
@@ -128,7 +129,7 @@ def verify_consistency(hasher, sizes, proof, roots):
 
     Raises:
         ValueError: Raised if the latest tree size < old tree size
-        ValueError: Raised if both tree sizes are equal but the proof is not empty 
+        ValueError: Raised if both tree sizes are equal but the proof is not empty
         ValueError: Raised if proof is not empty
         ValueError: Raised if proof is not empty
         ValueError: Raised if proof is of incorrect size
@@ -172,7 +173,9 @@ def verify_consistency(hasher, sizes, proof, roots):
 
     bytearray_proof = bytearray_proof[start:]
 
-    hash1 = chain_inner_right(hasher, seed, bytearray_proof[:inner], (sizes[0] - 1) >> shift)
+    hash1 = chain_inner_right(
+        hasher, seed, bytearray_proof[:inner], (sizes[0] - 1) >> shift
+    )
     hash1 = chain_border_right(hasher, hash1, bytearray_proof[inner:])
     verify_match(hash1, root1)
 
@@ -283,13 +286,16 @@ class RootMismatchError(Exception):
     Args:
         Exception (BaseException): The base exception for which this exception is derived from
     """
+
     def __init__(self, expected_root, calculated_root):
         self.expected_root = binascii.hexlify(bytearray(expected_root))
         self.calculated_root = binascii.hexlify(bytearray(calculated_root))
 
     def __str__(self):
-        return (f"calculated root:\n{self.calculated_root}\n "
-        "does not match expected root:\n{self.expected_root}")
+        return (
+            f"calculated root:\n{self.calculated_root}\n "
+            "does not match expected root:\n{self.expected_root}"
+        )
 
 
 def root_from_inclusion_proof(hasher, index, size, leaf_hash, proof):
@@ -339,8 +345,12 @@ def verify_inclusion(hasher, inclusion_proof, leaf_hash, debug=False):
         root (str): Hash of the root
         debug (bool, optional): If True, print debug information. Defaults to False.
     """
-    index, size, proof, root = inclusion_proof['logIndex'], inclusion_proof['treeSize'], \
-    inclusion_proof['hashes'], inclusion_proof['rootHash']
+    index, size, proof, root = (
+        inclusion_proof["logIndex"],
+        inclusion_proof["treeSize"],
+        inclusion_proof["hashes"],
+        inclusion_proof["rootHash"],
+    )
 
     bytearray_proof = []
     for elem in proof:

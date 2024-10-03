@@ -83,6 +83,7 @@ def verify_artifact_signature(signature, public_key, artifact_filename):
     except FileNotFoundError:
         print("File not found")
 
+
 def decode_base64(string):
     """Decodes a base64 encoded string
 
