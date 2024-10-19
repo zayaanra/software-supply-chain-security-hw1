@@ -27,3 +27,4 @@ tomlkit==0.13.2
 types-requests==2.32.0.20240914
 typing_extensions==4.12.2
 urllib3==2.2.3
+pre-commit
